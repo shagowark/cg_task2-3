@@ -1,17 +1,29 @@
 package app;
 
+import figures.Rect;
+
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Comparator;
+import java.util.List;
 
 public class Monolog extends JDialog {
     private JPanel contentPane;
-    private JButton buttonOK;
-    private JButton buttonCancel;
+    private JButton buttonGetSolution;
 
 
     public Monolog() {
         setContentPane(contentPane);
         setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
+        getRootPane().setDefaultButton(buttonGetSolution);
+        buttonGetSolution.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                List<Rect> allRects = DrawPanel.getAllRects();
+                //todo sortRect, findResult
+            }
+        });
     }
 
     public static void main(String[] args) {

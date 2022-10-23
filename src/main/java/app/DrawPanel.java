@@ -20,7 +20,9 @@ public class DrawPanel extends JPanel implements MouseListener, MouseMotionListe
     private Rect currentRect = null;
     private static List<Rect> allRects = new ArrayList<>();
     private Rect editingRect = null;
-    private RealPoint editPoint = null;
+    private RealPoint editCorner = null;
+    private boolean editingRightCorner = false; //bottom
+    private boolean editingLeftCorner = false; //upper
 
     public DrawPanel() {
         sc = new ScreenConverter(-2, 2, 4, 4, 800, 600);
@@ -75,7 +77,8 @@ public class DrawPanel extends JPanel implements MouseListener, MouseMotionListe
         ScreenPoint p2 = sc.r2s(l.getP2());
         g.drawLine(p1.getC(), p1.getR(), p2.getC(), p2.getR());
     }
-    private static void drawLine(LineDrawer ld, ScreenConverter sc, Line l){
+
+    private static void drawLine(LineDrawer ld, ScreenConverter sc, Line l) {
         ScreenPoint p1 = sc.r2s(l.getP1());
         ScreenPoint p2 = sc.r2s(l.getP2());
         ld.drawLine(p1.getC(), p1.getR(), p2.getC(), p2.getR());
@@ -160,10 +163,26 @@ public class DrawPanel extends JPanel implements MouseListener, MouseMotionListe
                     currentRect = new Rect(p, 0, 0);
                 }
             } else {
-                editingRect = null;
+                ScreenPoint p = new ScreenPoint(e.getX(), e.getY());
+                RealPoint leftCorner = editingRect.getCorner();
+                ScreenPoint lc = sc.r2s(leftCorner);
+                ScreenPoint rc = new ScreenPoint(lc.getC() + sc.r2sForXLine(editingRect.getWidth()),
+                        lc.getR() + sc.r2sForYLine(editingRect.getHeight()));
+                RealPoint rightCorner = sc.s2r(rc);
+                if (isNear(sc, leftCorner, p, 10)) {
+                    editingLeftCorner = true;
+                } else if (isNear(sc, rightCorner, p, 10)) {
+                    editingRightCorner = true;
+                } else {
+                    editingRect = null;
+                    editingLeftCorner = false;
+                    editingRightCorner = false;
+                }
             }
         }
+
         repaint();
+
     }
 
     @Override
@@ -182,6 +201,25 @@ public class DrawPanel extends JPanel implements MouseListener, MouseMotionListe
                     allRects.add(currentRect);
                 }
                 currentRect = null;
+            } else if (editingRect != null) {
+                ScreenPoint p = new ScreenPoint(e.getX(), e.getY());
+                if (editingRightCorner) {
+                    RealPoint leftCorner = editingRect.getCorner();
+                    ScreenPoint lc = sc.r2s(leftCorner);
+                    ScreenPoint rc = new ScreenPoint(lc.getC() + sc.r2sForXLine(editingRect.getWidth()),
+                            lc.getR() + sc.r2sForYLine(editingRect.getHeight()));
+                    double width = sc.s2rForXLine(rc.getC() - lc.getC());
+                    double height = sc.s2rForYLine(rc.getR() - lc.getR());
+                    editingRect.setWidth(width);
+                    editingRect.setHeight(height);
+                    editingRect = null;
+                } else if (editingLeftCorner) {
+                    editingRect.setCorner(sc.s2r(p));
+                    editingRect = null;
+                }
+                editingRightCorner = false;
+                editingLeftCorner = false;
+                //todo
             }
         } else if (SwingUtilities.isMiddleMouseButton(e)) {
             if (editingRect != null) {
@@ -217,16 +255,22 @@ public class DrawPanel extends JPanel implements MouseListener, MouseMotionListe
             if (currentRect != null) {
                 ScreenPoint p = new ScreenPoint(e.getX(), e.getY());
                 ScreenPoint currentCorner = sc.r2s(currentRect.getCorner());
-                int width = p.getC() - currentCorner.getC();
-                int height = p.getR() - currentCorner.getR();
-                if (width >= 0 && height >= 0) {
-                    currentRect.setWidth(sc.s2rForXLine(width));
-                    currentRect.setHeight(sc.s2rForYLine(height));
-                } else {
-                    currentRect = null;
-                }
+                int width = Math.abs(p.getC() - currentCorner.getC());
+                int height = Math.abs(p.getR() - currentCorner.getR());
+                currentRect.setWidth(sc.s2rForXLine(width));
+                currentRect.setHeight(sc.s2rForYLine(height));
             } else if (editingRect != null) {
-
+                ScreenPoint p = new ScreenPoint(e.getX(), e.getY());
+                if (editingRightCorner) {
+                    RealPoint leftCorner = editingRect.getCorner();
+                    ScreenPoint lc = sc.r2s(leftCorner);
+                    double width = Math.abs(sc.s2rForXLine(p.getC() - lc.getC()));
+                    double height = Math.abs(sc.s2rForYLine(p.getR() - lc.getR()));
+                    editingRect.setWidth(width);
+                    editingRect.setHeight(height);
+                } else if (editingLeftCorner) {
+                    editingRect.setCorner(sc.s2r(p));
+                }
             }
         }
         repaint();
@@ -250,5 +294,9 @@ public class DrawPanel extends JPanel implements MouseListener, MouseMotionListe
         }
         sc.changeScale(scale);
         repaint();
+    }
+
+    public static List<Rect> getAllRects() {
+        return allRects;
     }
 }
