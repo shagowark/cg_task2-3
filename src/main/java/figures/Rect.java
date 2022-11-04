@@ -3,22 +3,22 @@ package figures;
 import screenWork.RealPoint;
 
 public class Rect {
-    private RealPoint corner; //left, upper
+    private RealPoint baseCorner; //left, upper
     private double width;
     private double height;
 
-    public Rect(RealPoint corner, double width, double height) {
-        this.corner = corner;
+    public Rect(RealPoint baseCorner, double width, double height) {
+        this.baseCorner = baseCorner;
         this.width = width;
         this.height = height;
     }
 
-    public RealPoint getCorner() {
-        return corner;
+    public RealPoint getBaseCorner() {
+        return baseCorner;
     }
 
-    public void setCorner(RealPoint corner) {
-        this.corner = corner;
+    public void setBaseCorner(RealPoint baseCorner) {
+        this.baseCorner = baseCorner;
     }
 
     public double getWidth() {
@@ -35,5 +35,17 @@ public class Rect {
 
     public void setHeight(double height) {
         this.height = height;
+    }
+
+    public RealPoint getRightBotCorner(){
+        return new RealPoint(baseCorner.getX() + width, baseCorner.getY() - height);
+    }
+
+    public RealPoint getLeftBotCorner(){
+        return new RealPoint(baseCorner.getX(), baseCorner.getY() - height);
+    }
+
+    public RealPoint gerRightUppCorner(){
+        return new RealPoint(baseCorner.getX() + width, baseCorner.getY());
     }
 }

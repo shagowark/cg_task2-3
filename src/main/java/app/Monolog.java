@@ -11,6 +11,7 @@ import java.util.List;
 public class Monolog extends JDialog {
     private JPanel contentPane;
     private JButton buttonGetSolution;
+    private DrawPanel drawPanel;
 
 
     public Monolog() {
@@ -20,8 +21,7 @@ public class Monolog extends JDialog {
         buttonGetSolution.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                List<Rect> allRects = DrawPanel.getAllRects();
-                //todo sortRect, findResult
+                drawPanel.setMode(true);
             }
         });
     }
