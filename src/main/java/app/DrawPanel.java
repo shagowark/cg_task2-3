@@ -2,10 +2,12 @@ package app;
 
 import drawers.*;
 import figures.Line;
+import figures.Polygon;
 import figures.Rect;
 import screenWork.RealPoint;
 import screenWork.ScreenConverter;
 import screenWork.ScreenPoint;
+import solution.Solver;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,7 +48,9 @@ public class DrawPanel extends JPanel implements MouseListener, MouseMotionListe
         LineDrawer ldDDA = new DDALineDrawer(pd);
         LineDrawer ldGr = new GraphicsLineDrawer(g);
         LineDrawer ldBres = new BresenhamLineDrawer(pd);
+        LineDrawer ldWu = new WuLineDrawer(pd);
         RectDrawer rd = new RectDrawer();
+        PolygonDrawer polyD = new PolygonDrawer();
 
         g.setColor(Color.BLUE);
         drawLine(ldDDA, sc, ox);
@@ -67,24 +71,136 @@ public class DrawPanel extends JPanel implements MouseListener, MouseMotionListe
             rd.drawRect(editingRect, ldGr, sc);
         }
 
-        if (modeIntersect) { //todo
-            List<Line> lines = findRectJoin(allRects);
+        if (modeIntersect) {
+            Solver solver = new Solver(allRects);
+            Polygon resultPolygon = solver.findRectsJoin();
             g.setColor(Color.MAGENTA);
-            for (Line l : lines){
-                drawLine(ldDDA, sc, l);
-            }
+            polyD.drawPolygon(resultPolygon, ldDDA, sc);
         }
 
         origG.drawImage(bi, 0, 0, null);
         g.dispose();
     }
 
-    private static List<Line> findRectJoin(List<Rect> rects){
-        List<Line> resultLines = new ArrayList<>();
+//    private static List<Line> findRectJoin(List<Rect> rects){
+//        List<Line> resultLines = new ArrayList<>();
+//        //rects = sortRects(rects);
+//        sortRects(rects); // todo новый лист, старый не портим
+//        if (rects.size() == 1){
+//            Rect currRect = rects.get(0);
+//            resultLines.add(new Line(currRect.getBaseCorner(), currRect.getRightUppCorner()));
+//            resultLines.add(new Line(currRect.getRightUppCorner(), currRect.getRightBotCorner()));
+//            resultLines.add(new Line(currRect.getRightBotCorner(), currRect.getLeftBotCorner()));
+//            resultLines.add(new Line(currRect.getLeftBotCorner(), currRect.getBaseCorner()));
+//        } else {
+//            crossRects(0, rects.get(0).getBaseCorner(), resultLines, rects);
+//        }
+//
+//        return resultLines;
+//    }
+//
+//    private static RealPoint crossRects(int curr, RealPoint prevPoint, List<Line> resultLines, List<Rect> rects){
+//        if (rects.size() == curr + 1){
+//            Rect currRect = rects.get(curr);
+//            resultLines.add(new Line(prevPoint, currRect.getRightUppCorner()));
+//            resultLines.add(new Line(currRect.getRightUppCorner(), currRect.getRightBotCorner()));
+//            Rect prevRect = rects.get(curr - 1);
+//            if (prevRect.getBaseCorner().getY() < currRect.getBaseCorner().getY()){
+//                resultLines.add(new Line(currRect.getRightBotCorner(),
+//                        new RealPoint(prevRect.getRightUppCorner().getX(), currRect.getRightBotCorner().getY())));
+//                return new RealPoint(prevRect.getRightUppCorner().getX(), currRect.getRightBotCorner().getY());
+//            } else {
+//                resultLines.add(new Line(currRect.getRightBotCorner(), currRect.getLeftBotCorner()));
+//                resultLines.add(new Line(currRect.getLeftBotCorner(),
+//                        new RealPoint(currRect.getLeftBotCorner().getX(), prevRect.getLeftBotCorner().getY())));
+//                return new RealPoint(currRect.getLeftBotCorner().getX(), prevRect.getLeftBotCorner().getY());
+//            }
+//
+//        }
+//        Rect currRect = rects.get(curr);
+//        Rect nextRect = rects.get(curr+1);
+//        RealPoint currBaseCorner = currRect.getBaseCorner();
+//        RealPoint nextBaseCorner = nextRect.getBaseCorner();
+//        double currCornerX = currBaseCorner.getX();
+//        double currCornerY = currBaseCorner.getY();
+//        double nextCornerX = nextBaseCorner.getX();
+//        double nextCornerY = nextBaseCorner.getY();
+//        if (currCornerX + currRect.getWidth() > nextCornerX){
+//            if (currCornerY < nextCornerY){
+//                RealPoint crossPoint = new RealPoint(nextCornerX, currCornerY);
+//                resultLines.add(new Line(prevPoint, crossPoint));
+//                resultLines.add(new Line(crossPoint, nextBaseCorner));
+//                prevPoint = crossRects(curr+1, nextBaseCorner, resultLines, rects);
+//                resultLines.add(new Line(prevPoint, currRect.getRightBotCorner()));
+//
+//                if (curr - 1 >= 0) {
+//                    Rect prevRect = rects.get(curr - 1);
+//                    if (prevRect.getBaseCorner().getY() < currRect.getBaseCorner().getY()) {
+//                        resultLines.add(new Line(currRect.getRightBotCorner(),
+//                                new RealPoint(prevRect.getRightUppCorner().getX(), currRect.getRightBotCorner().getY())));
+//                        return new RealPoint(prevRect.getRightUppCorner().getX(), currRect.getRightBotCorner().getY());
+//                    } else {
+//                        resultLines.add(new Line(currRect.getRightBotCorner(), currRect.getLeftBotCorner()));
+//                        resultLines.add(new Line(currRect.getLeftBotCorner(),
+//                                new RealPoint(currRect.getLeftBotCorner().getX(), prevRect.getLeftBotCorner().getY())));
+//                        return new RealPoint(currRect.getLeftBotCorner().getX(), prevRect.getLeftBotCorner().getY());
+//                    }
+//                } else {
+//                    resultLines.add(new Line(currRect.getRightBotCorner(), currRect.getLeftBotCorner()));
+//                    resultLines.add(new Line(currRect.getLeftBotCorner(), currRect.getBaseCorner()));
+//                    return currBaseCorner;
+//                }
+//            } else {
+//                RealPoint crossPoint = new RealPoint(currRect.getRightUppCorner().getX(), nextCornerY);
+//                resultLines.add(new Line(prevPoint, currRect.getRightUppCorner()));
+//                resultLines.add(new Line(currRect.getRightUppCorner(), crossPoint));
+//                prevPoint = crossRects(curr+1, crossPoint, resultLines, rects);
+//
+//                if (curr - 1 >= 0) {
+//                    Rect prevRect = rects.get(curr - 1);
+//                    if (prevRect.getBaseCorner().getY() < currRect.getBaseCorner().getY()) {
+//                        resultLines.add(new Line(prevPoint,
+//                                new RealPoint(prevRect.getRightUppCorner().getX(), currRect.getLeftBotCorner().getY())));
+//                        return new RealPoint(prevRect.getRightUppCorner().getX(), currRect.getLeftBotCorner().getY());
+//                    } else {
+//                        resultLines.add(new Line(prevPoint, currRect.getLeftBotCorner()));
+//                        resultLines.add(new Line(currRect.getLeftBotCorner(),
+//                                new RealPoint(currRect.getLeftBotCorner().getX(), prevRect.getLeftBotCorner().getY())));
+//                        return new RealPoint(currRect.getLeftBotCorner().getX(), prevRect.getLeftBotCorner().getY());
+//                    }
+//                } else {
+//                    resultLines.add(new Line(prevPoint, currRect.getLeftBotCorner()));
+//                    resultLines.add(new Line(currRect.getLeftBotCorner(), currRect.getBaseCorner()));
+//                    return currBaseCorner;
+//                }
+//            }
+//        } else {
+//            resultLines.add(new Line(currRect.getBaseCorner(), currRect.getRightUppCorner()));
+//            resultLines.add(new Line(currRect.getRightUppCorner(), currRect.getRightBotCorner()));
+//            resultLines.add(new Line(currRect.getRightBotCorner(), currRect.getLeftBotCorner()));
+//            resultLines.add(new Line(currRect.getLeftBotCorner(), currRect.getBaseCorner()));
+//            crossRects(curr+1, nextBaseCorner, resultLines, rects);
+//            return currBaseCorner;
+//        }
+//    }
+//    public static List<Rect> sortRects(List<Rect> rects){
+//        for (int i = 1; i < rects.size(); i++){
+//            for (int j = i; j > 0 && rects.get(j-1).getBaseCorner().getX() > rects.get(j).getBaseCorner().getX(); j--){
+//                Rect temp = rects.get(j-1);
+//                rects.set(j-1, rects.get(j));
+//                rects.set(j, temp);
+//            }
+//        }
 
-        //todo
-        return resultLines;
-    }
+//        for (int i = 1; i < rects.size(); i++){
+//            for (int j = i; j > 0 && rects.get(j-1).getBaseCorner().getX() > rects.get(j).getBaseCorner().getX(); j--){
+//                Rect temp = rects.get(j-1);
+//                rects.set(j-1, rects.get(j));
+//                rects.set(j, temp);
+//            }
+//        }
+//        return rects;
+//    }
 
     private static void drawLine(Graphics2D g, ScreenConverter sc, Line l) {
         ScreenPoint p1 = sc.r2s(l.getP1());

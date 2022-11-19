@@ -14,10 +14,10 @@ public class BresenhamLineDrawer implements LineDrawer {
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
 
-        int dx2 = 2 * dx; // slope scaling factors to
-        int dy2 = 2 * dy; // avoid floating point
+        int dx2 = 2 * dx;
+        int dy2 = 2 * dy;
 
-        int ix = x1 < x2 ? 1 : -1; // increment direction
+        int ix = x1 < x2 ? 1 : -1;
         int iy = y1 < y2 ? 1 : -1;
 
         int x = x1;

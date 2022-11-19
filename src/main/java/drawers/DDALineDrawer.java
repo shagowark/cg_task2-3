@@ -21,7 +21,7 @@ public class DDALineDrawer implements LineDrawer {
         // линии, обеспечиваем связность линии
         int length = Math.max(deltaX, deltaY);
 
-        // особый случай, на экране закрашивается ровно один пиксел
+        // особый случай, на экране закрашивается ровно один пиксель
         if (length == 0) {
             pd.drawPixel(x1, y1);
             return;
@@ -38,9 +38,10 @@ public class DDALineDrawer implements LineDrawer {
         // Основной цикл
         length++;
         while (length > 0) {
+            pd.drawPixel((int) x, (int) y);
             x += dX;
             y += dY;
-            pd.drawPixel((int) x, (int) y);
+
             length--;
         }
     }

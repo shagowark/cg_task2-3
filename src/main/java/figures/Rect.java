@@ -45,7 +45,7 @@ public class Rect {
         return new RealPoint(baseCorner.getX(), baseCorner.getY() - height);
     }
 
-    public RealPoint gerRightUppCorner(){
+    public RealPoint getRightUppCorner(){
         return new RealPoint(baseCorner.getX() + width, baseCorner.getY());
     }
 }

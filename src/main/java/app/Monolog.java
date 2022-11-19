@@ -1,17 +1,14 @@
 package app;
 
-import figures.Rect;
-
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Comparator;
-import java.util.List;
 
 public class Monolog extends JDialog {
     private JPanel contentPane;
     private JButton buttonGetSolution;
     private DrawPanel drawPanel;
+    private JButton drawButton;
 
 
     public Monolog() {
@@ -22,6 +19,12 @@ public class Monolog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 drawPanel.setMode(true);
+            }
+        });
+        drawButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                drawPanel.setMode(false);
             }
         });
     }
